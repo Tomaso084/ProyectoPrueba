@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espacio Las Ñañas - Productos Agroecológicos</title>
+    <!-- Incluir Tailwind CSS CDN para un diseño moderno y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary: #104e17; /* Verde Bosque */
+            --color-secondary: #964B00; /* Tierra/Ámbar */
+            --color-accent: #B87333; /* Terracota */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f8f8;
+        }
+        .section-title {
+            border-bottom-color: var(--color-secondary);
+        }
+        .mapuche-pattern {
+            /* Simulación de un patrón Mapuche sutil como fondo */
+            background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05) 10px, transparent 10px, transparent 20px);
+        }
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #0d3b11;
+        }
+        /* Estilo para el spinner de carga */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--color-primary);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        /* Estilos para la navegación colapsada en mobile */
+        #main-nav {
+            transform-origin: top;
+            transition: transform 0.3s ease-in-out;
+            position: absolute; 
+            top: 100%; 
+            left: 0;
+            right: 0;
+            width: 100%;
+            /* Fondo sólido para legibilidad */
+            background-color: var(--color-primary); 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); 
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 40;
+        }
+        /* Asegurar que los botones dentro del menú colapsado se vean bien */
+        #main-nav .nav-link {
+            padding: 0.75rem 1rem;
+            width: 100%;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        /* Para evitar problemas de alineación en el flex del header en mobile */
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        /* Estilos para el modal de imagen */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+        }
+        /* Estilos para inputs inválidos */
+        .input-error {
+            border-color: #dc2626 !important; /* red-600 */
+            background-color: #fef2f2; /* red-50 */
+        }
+        .input-error:focus {
+            --tw-ring-color: #dc2626 !important;
+            border-color: #dc2626 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA DE NAVEGACIÓN (Navbar) -->
+    <header class="sticky top-0 z-50 bg-[--color-primary] text-white shadow-xl">
+        <div class="container mx-auto px-4 py-2 relative">
+            
+            <div class="header-content">
+                <!-- Izquierda: Logo y Toggle (Mobile) -->
+                <div class="flex items-center space-x-4">
+                    <!-- Logo e Identidad Ancestral -->
+                    <div class="cursor-pointer flex items-center" onclick="showPage('home')">
+                        <!-- LOGO ACTUALIZADO: Se adapta al alto del header -->
+                        <img src="logo.png" 
+                             alt="Logo Espacio Las Ñañas" 
+                             class="h-14 md:h-20 w-auto mr-3 object-contain transition-all duration-300"
+                             onerror="this.style.display='none'; document.getElementById('fallback-logo').classList.remove('hidden');">
+                        
+                        <!-- Fallback SVG (Solo se muestra si falla la imagen) -->
+                        <div id="fallback-logo" class="flex items-center hidden">
+                            <svg class="w-8 h-8 mr-2 fill-current text-[--color-secondary]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zM12 8a4 4 0 100 8 4 4 0 000-8zm0 2a2 2 0 110 4 2 2 0 010-4z" /></svg>
+                            <span class="text-xl font-serif tracking-widest font-bold">Las Ñañas</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Botón de Menú Hamburguesa (Solo en Mobile) -->
+                    <button id="menu-toggle" onclick="toggleMenu()" class="md:hidden p-2 rounded-lg hover:bg-[#0d3b11] focus:outline-none ml-2">
+                        <svg id="menu-icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                        <svg id="menu-icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                
+                <!-- Derecha: Navegación (Desktop) + Carrito + Auth (Siempre) -->
+                <div class="flex items-center space-x-4">
+
+                    <!-- Navegación Principal (Solo Desktop) -->
+                    <nav id="desktop-nav" class="hidden md:flex space-x-4 text-sm md:text-base font-medium items-center">
+                        <button onclick="showPageAndCloseMenu('home')" id="desk-nav-home" class="nav-link px-3 py-2 rounded-lg transition duration-200 text-gray-200 hover:bg-[#0d3b11] hover:text-[--color-secondary]">Inicio</button>
+                        <button onclick="showPageAndCloseMenu('products')" id="desk-nav-products" class="nav-link px-3 py-2 rounded-lg transition duration-200 text-gray-200 hover:bg-[#0d3b11] hover:text-[--color-secondary]">Productos</button>
+                        <button onclick="showPageAndCloseMenu('gallery')" id="desk-nav-gallery" class="nav-link px-3 py-2 rounded-lg transition duration-200 text-gray-200 hover:bg-[#0d3b11] hover:text-[--color-secondary]">Galería</button>
+                        <button onclick="showPageAndCloseMenu('forum')" id="desk-nav-forum" class="nav-link px-3 py-2 rounded-lg transition duration-200 text-gray-200 hover:bg-[#0d3b11] hover:text-[--color-secondary]">Comunidad</button>
+                        <button onclick="showPageAndCloseMenu('contact')" id="desk-nav-contact" class="nav-link px-3 py-2 rounded-lg transition duration-200 text-gray-200 hover:bg-[#0d3b11] hover:text-[--color-secondary]">Contacto</button>
+                    </nav>
+                
+                    <!-- Autenticación y Carrito -->
+                    <div class="relative flex items-center space-x-3">
+                        
+                        <!-- Botón de Carrito -->
+                        <button onclick="toggleCart()" id="cart-button" class="relative p-2 bg-[--color-secondary] hover:bg-amber-700 rounded-lg text-white text-sm transition duration-200 shadow-sm">
+                            <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            <span id="cart-count" class="absolute -top-1 -right-1 bg-red-600 text-xs text-white rounded-full h-5 w-5 flex items-center justify-center font-bold hidden border-2 border-white">0</span>
+                        </button>
+
+                        <!-- Dropdown del Carrito -->
+                        <div id="cart-dropdown" class="absolute right-0 top-full mt-4 w-80 bg-white rounded-xl shadow-2xl z-50 p-4 border-t-4 border-[--color-secondary] hidden text-gray-800 animate-fade-in-down">
+                            <h4 class="text-lg font-bold text-[--color-primary] border-b pb-2 mb-3 flex justify-between items-center">
+                                Tu Carrito
+                                <span class="text-xs font-normal text-gray-500 cursor-pointer hover:text-red-500" onclick="toggleCart()">✕ Cerrar</span>
+                            </h4>
+                            <div id="cart-dropdown-items" class="space-y-3 mb-3 max-h-64 overflow-y-auto text-sm custom-scrollbar">
+                                <!-- Items irán aquí -->
+                            </div>
+                            <div class="flex justify-between items-center pt-3 border-t border-gray-200 mt-2">
+                                <span class="font-bold text-md text-[--color-primary]">Total:</span>
+                                <span id="cart-dropdown-total" class="font-extrabold text-xl text-[--color-secondary]">$0</span>
+                            </div>
+                            <button onclick="handleCheckout()" id="dropdown-checkout-button" class="w-full mt-4 py-2 btn-primary font-bold rounded-lg transition duration-300 disabled:bg-gray-400 shadow-md">
+                                Finalizar Compra
+                            </button>
+                        </div>
+
+                        <button onclick="showPage('login')" id="nav-login" class="px-3 py-2 bg-[--color-secondary] hover:bg-amber-700 rounded-lg text-white text-xs md:text-sm transition duration-200 whitespace-nowrap shadow-sm">Ingresar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menú de Navegación Móvil (Fondo sólido corregido) -->
+            <nav id="main-nav" class="hidden md:hidden flex-col space-y-0">
+                <button onclick="showPageAndCloseMenu('home')" id="mobile-nav-home" class="nav-link block text-left px-4 py-3 text-gray-100 hover:bg-[#0d3b11] hover:text-[--color-secondary] border-b border-green-800">Inicio</button>
+                <button onclick="showPageAndCloseMenu('products')" id="mobile-nav-products" class="nav-link block text-left px-4 py-3 text-gray-100 hover:bg-[#0d3b11] hover:text-[--color-secondary] border-b border-green-800">Productos</button>
+                <button onclick="showPageAndCloseMenu('gallery')" id="mobile-nav-gallery" class="nav-link block text-left px-4 py-3 text-gray-100 hover:bg-[#0d3b11] hover:text-[--color-secondary] border-b border-green-800">Galería</button>
+                <button onclick="showPageAndCloseMenu('forum')" id="mobile-nav-forum" class="nav-link block text-left px-4 py-3 text-gray-100 hover:bg-[#0d3b11] hover:text-[--color-secondary] border-b border-green-800">Comunidad</button>
+                <button onclick="showPageAndCloseMenu('contact')" id="mobile-nav-contact" class="nav-link block text-left px-4 py-3 text-gray-100 hover:bg-[#0d3b11] hover:text-[--color-secondary]">Contacto</button>
+            </nav>
+
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="pb-10 container mx-auto px-4">
+
+        <!-- 1. PÁGINA DE INICIO (HOME) -->
+        <section id="page-home" class="page-content py-12">
+            <!-- Banner Ancestral -->
+            <div class="bg-[--color-primary] text-white p-10 md:p-16 text-center shadow-inner rounded-xl mb-12 mapuche-pattern">
+                <h1 class="text-4xl md:text-6xl font-extrabold mb-4 font-serif drop-shadow-lg">
+                    ESPACIO LAS ÑAÑAS
+                </h1>
+                <p class="text-lg md:text-2xl font-light italic">
+                    Ñuke Mapu (Madre Tierra): La fuerza de nuestra herencia en cada cosecha.
+                </p>
+            </div>
+
+            <h2 class="section-title text-3xl font-extrabold text-[--color-primary] border-b-4 pb-2 mb-6 inline-block w-full">
+                Nuestra Misión y Organización
+            </h2>
+
+            <div class="grid md:grid-cols-2 gap-8 items-center mb-10">
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition duration-300">
+                    <h3 class="text-2xl font-bold text-[--color-secondary] mb-3">¿Quiénes Somos?</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Somos una asociación de mujeres Mapuche de la Araucanía, Chile, unidas por el respeto a la tierra y las prácticas agroecológicas ancestrales. Nuestro trabajo recupera y valoriza semillas y técnicas de cultivo tradicionales, asegurando productos de la más alta calidad, libres de químicos y llenos de identidad.
+                    </p>
+                    <p class="mt-4 text-gray-600 leading-relaxed">
+                        Promovemos la autonomía económica y la preservación cultural. Cada compra apoya directamente a nuestras familias y a la mantención de nuestra cosmovisión.
+                    </p>
+                </div>
+                <div>
+                    <img
+                        src="fotoinicio.jpg"
+                        alt="Mujeres Mapuche cultivando productos agroecológicos"
+                        class="w-full h-auto object-cover rounded-xl shadow-xl border-4 border-[--color-secondary]"
+                        onerror="this.onerror=null; this.src='https://placehold.co/600x400/964B00/ffffff?text=Mujeres+Mapuche+Cultivando';"
+                    />
+                </div>
+            </div>
+
+            <h2 class="section-title text-3xl font-extrabold text-[--color-primary] border-b-4 pb-2 mb-6 inline-block w-full">
+                Pilares de Nuestro Trabajo
+            </h2>
+            <div class="grid sm:grid-cols-3 gap-6 text-center">
+                <!-- Pilar 1 -->
+                <div class="p-6 bg-white rounded-xl shadow-lg transition duration-300 transform hover:scale-105 border-t-4 border-[--color-primary]">
+                    <p class="text-4xl mb-3">🌱</p>
+                    <h4 class="text-xl font-semibold text-[--color-primary] mb-2">Agroecología</h4>
+                    <p class="text-gray-500 text-sm">Cultivamos sin químicos, respetando los ciclos de la tierra.</p>
+                </div>
+                <!-- Pilar 2 -->
+                <div class="p-6 bg-white rounded-xl shadow-lg transition duration-300 transform hover:scale-105 border-t-4 border-[--color-primary]">
+                    <p class="text-4xl mb-3">💎</p>
+                    <h4 class="text-xl font-semibold text-[--color-primary] mb-2">Herencia Ancestral</h4>
+                    <p class="text-gray-500 text-sm">Mantenemos vivas las tradiciones y el uso de semillas nativas.</p>
+                </div>
+                <!-- Pilar 3 -->
+                <div class="p-6 bg-white rounded-xl shadow-lg transition duration-300 transform hover:scale-105 border-t-4 border-[--color-primary]">
+                    <p class="text-4xl mb-3">💪</p>
+                    <h4 class="text-xl font-semibold text-[--color-primary] mb-2">Empoderamiento</h4>
+                    <p class="text-gray-500 text-sm">Fomentamos la autonomía económica de la mujer Mapuche.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. PÁGINA DE PRODUCTOS (PRODUCTS) -->
+        <section id="page-products" class="page-content py-8 hidden">
+            <h2 class="section-title text-3xl font-extrabold text-[--color-primary] border-b-4 pb-2 mb-6 inline-block w-full">
+                Nuestros Productos Agroecológicos
+            </h2>
+            <p class="text-gray-600 mb-8">Directo de la Ñuke Mapu a tu mesa. Cultivados con amor y respeto ancestral.</p>
+
+            <div id="product-message" class="p-4 mb-4 rounded-lg shadow-md font-medium hidden"></div>
+
+            <!-- Contenedor de Productos -->
+            <div id="product-list" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Las tarjetas de productos se renderizarán aquí -->
+            </div>
+        </section>
+
+        <!-- NUEVA PÁGINA: GALERÍA DE FOTOS -->
+        <section id="page-gallery" class="page-content py-8 hidden">
+            <h2 class="section-title text-3xl font-extrabold text-[--color-primary] border-b-4 pb-2 mb-6 inline-block w-full">
+                Nuestra Vida en el Campo
+            </h2>
+            <p class="text-gray-600 mb-8">Imágenes que retratan el día a día de nuestra comunidad, el trabajo de la tierra y nuestras tradiciones.</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                <!-- Foto 1 -->
+                <div class="bg-white p-3 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:scale-[1.02]">
+                    <img src="gal1.jpg" alt="Cosecha Comunitaria" 
+                         class="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                         onclick="openImageModal(this.src)" title="Ver ampliada">
+                    <p class="text-center mt-3 text-[--color-primary] font-semibold">Cosecha Comunitaria</p>
+                </div>
+                
+                <!-- Foto 2 -->
+                <div class="bg-white p-3 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:scale-[1.02]">
+                    <img src="gal2.jpg" alt="Preparación de la Tierra" 
+                         class="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                         onclick="openImageModal(this.src)" title="Ver ampliada">
+                    <p class="text-center mt-3 text-[--color-primary] font-semibold">Preparación de la Tierra</p>
+                </div>
+
+                <!-- Foto 3 -->
+                <div class="bg-white p-3 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:scale-[1.02]">
+                    <img src="gal3.jpg" alt="Taller de Telares" 
+                         class="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                         onclick="openImageModal(this.src)" title="Ver ampliada">
+                    <p class="text-center mt-3 text-[--color-primary] font-semibold">Huevos de nuestras gallinas</p>
+                </div>
+
+                <!-- Foto 4 -->
+                <div class="bg-white p-3 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:scale-[1.02]">
+                    <img src="gal4.jpg" alt="Huerta Medicinal" 
+                         class="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                         onclick="openImageModal(this.src)" title="Ver ampliada">
+                    <p class="text-center mt-3 text-[--color-primary] font-semibold">Preparando pancito para la reunion</p>
+                </div>
+
+                <!-- Foto 5 -->
+                <div class="bg-white p-3 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:scale-[1.02]">
+                    <img src="gal5.jpg" alt="Reunión de las Ñañas" 
+                         class="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                         onclick="openImageModal(this.src)" title="Ver ampliada">
+                    <p class="text-center mt-3 text-[--color-primary] font-semibold">Ruka reunión</p>
+                </div>
+
+                <!-- Foto 6 -->
+                <div class="bg-white p-3 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:scale-[1.02]">
+                    <img src="gal6.jpg" alt="Productos Frescos" 
+                         class="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                         onclick="openImageModal(this.src)" title="Ver ampliada">
+                    <p class="text-center mt-3 text-[--color-primary] font-semibold">Reunion alrededor del caldero</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. PÁGINA DE FORO (FORUM/COMMUNITY) -->
+        <section id="page-forum" class="page-content py-8 hidden">
+            <h2 class="section-title text-3xl font-extrabold text-[--color-primary] border-b-4 pb-2 mb-6 inline-block w-full">
+                Comunidad y Saberes (Foro)
+            </h2>
+            <p class="text-gray-600 mb-8">Un espacio para compartir conocimientos, experiencias de cultivo y reflexiones sobre la cultura Mapuche.</p>
+
+            <!-- Formulario para nuevo post -->
+            <div class="mb-10 p-6 bg-amber-100 rounded-xl shadow-inner border-t-4 border-[--color-secondary]">
+                <h3 class="text-xl font-bold text-amber-800 mb-4">Comparte tu Sabiduría</h3>
+                <form id="new-post-form">
+                    <input
+                        type="text"
+                        id="post-title"
+                        placeholder="Título del mensaje"
+                        class="w-full p-3 mb-3 border border-amber-300 rounded-lg focus:ring-[--color-primary] focus:border-[--color-primary]"
+                        required
+                    />
+                    <textarea
+                        id="post-content"
+                        placeholder="Escribe tu mensaje aquí..."
+                        rows="4"
+                        class="w-full p-3 mb-4 border border-amber-300 rounded-lg focus:ring-[--color-primary] focus:border-[--color-primary]"
+                        required
+                    ></textarea>
+                    <button
+                        type="submit"
+                        class="w-full py-3 btn-primary font-bold rounded-lg shadow-md disabled:bg-gray-400 transition duration-300"
+                    >
+                        Publicar en el Foro
+                    </button>
+                    <p id="forum-auth-message" class="text-center mt-2 text-red-500 text-sm hidden">Debes Iniciar Sesión para publicar.</p>
+                </form>
+            </div>
+
+            <!-- Lista de posts -->
+            <h3 class="text-2xl font-bold text-[--color-primary] mb-4">Últimas Contribuciones</h3>
+            <div id="forum-posts-container" class="space-y-4">
+                <!-- Los posts del foro se renderizarán aquí -->
+            </div>
+        </section>
+
+        <!-- 4. PÁGINA DE CONTACTO (CONTACT) -->
+        <section id="page-contact" class="page-content py-8 hidden">
+            <h2 class="section-title text-3xl font-extrabold text-[--color-primary] border-b-4 pb-2 mb-6 inline-block w-full">
+                Contacto y Ubicación
+            </h2>
+            <p class="text-gray-600 mb-8">Estamos en la Araucanía, Chile. Contacta con nuestra asociación para pedidos especiales, consultas o colaboraciones.</p>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Formulario -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-[--color-secondary]">
+                    <h3 class="text-2xl font-bold text-amber-800 mb-4">Envíanos un Mensaje</h3>
+                    <div id="contact-status-message" class="p-3 mb-4 rounded-lg font-medium hidden text-sm"></div>
+                    <!-- Se añade novalidate para usar nuestra validación JS -->
+                    <form id="contact-form" class="space-y-4" novalidate>
+                        <input 
+                            type="text" 
+                            name="name" 
+                            id="contact-name"
+                            placeholder="Tu Nombre" 
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-[--color-primary] focus:border-[--color-primary] outline-none transition-colors" 
+                        />
+                        <input 
+                            type="email" 
+                            name="email" 
+                            id="contact-email"
+                            placeholder="Tu Correo Electrónico" 
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-[--color-primary] focus:border-[--color-primary] outline-none transition-colors" 
+                        />
+                        <textarea 
+                            name="message" 
+                            id="contact-message"
+                            placeholder="Tu Mensaje o Consulta" 
+                            rows="5" 
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-[--color-primary] focus:border-[--color-primary] outline-none transition-colors"
+                        ></textarea>
+                        <button type="submit" class="w-full py-3 btn-primary font-bold rounded-lg shadow-md transition duration-300">Enviar</button>
+                    </form>
+                </div>
+
+                <!-- Información y Mapa Placeholder -->
+                <div class="bg-gray-100 p-6 rounded-xl shadow-lg border-t-4 border-[--color-primary]">
+                    <h3 class="text-2xl font-bold text-[--color-primary] mb-4">Información Directa</h3>
+                    <p class="mb-2 text-gray-700"><strong>Email:</strong> contacto@wenuyaraucania.cl</p>
+                    <p class="mb-2 text-gray-700"><strong>Teléfono:</strong> +56 9 1234 5678</p>
+                    <p class="mb-4 text-gray-700"><strong>Ubicación:</strong> Sector Rural, Región de La Araucanía, Chile</p>
+
+                    <h3 class="text-2xl font-bold text-[--color-primary] mb-4 mt-6">Nuestro Territorio</h3>
+                    <div class="w-full h-64 bg-gray-200 rounded-lg shadow-inner overflow-hidden">
+                        <img 
+                            src="mapa.jpg" 
+                            alt="Mapa de la ubicación en La Araucanía" 
+                            class="w-full h-full object-cover"
+                            onerror="this.onerror=null; this.src='https://placehold.co/600x400/e2e8f0/104e17?text=Mapa+de+Ubicación';"
+                        />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. PÁGINA DE INICIAR SESIÓN (LOGIN) -->
+        <section id="page-login" class="page-content py-16 hidden">
+            <div class="flex justify-center">
+                <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-2xl border-t-8 border-[--color-secondary]">
+                    <h2 class="section-title text-3xl font-extrabold text-[--color-primary] border-b-4 pb-2 mb-6 inline-block w-full">
+                        Iniciar Sesión
+                    </h2>
+                    <p class="text-gray-600 mb-6">Ingresa tus credenciales para acceder a la comunidad y tu cuenta.</p>
+
+                    <div id="login-message" class="p-3 mb-4 rounded-lg font-medium hidden text-sm"></div>
+
+                    <!-- FORMULARIO DE INICIO DE SESIÓN CON EMAIL Y CONTRASEÑA -->
+                    <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4" novalidate>
+                        <div>
+                            <input 
+                                type="email" 
+                                id="login-email" 
+                                placeholder="Correo Electrónico" 
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-[--color-primary] focus:border-[--color-primary] outline-none transition-colors" 
+                            />
+                        </div>
+                        <div>
+                            <input 
+                                type="password" 
+                                id="login-password" 
+                                placeholder="Contraseña" 
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-[--color-primary] focus:border-[--color-primary] outline-none transition-colors" 
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            id="login-button"
+                            class="w-full py-3 btn-primary font-bold text-lg rounded-lg shadow-md transition duration-300"
+                        >
+                            Ingresar
+                        </button>
+                    </form>
+                    
+                    <p class="mt-6 text-center text-sm text-gray-500">
+                        <span class="font-bold text-red-500">Credenciales de prueba:</span> email: <span class="font-mono">test@lasnianias.cl</span> | Contraseña: <span class="font-mono">123456</span>
+                    </p>
+                    <p class="mt-2 text-center text-sm text-gray-500">
+                        * Este es un front-end simulado.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-[--color-primary] text-white p-6 mt-8">
+        <div class="container mx-auto text-center text-sm">
+            <!-- LOGO AGREGADO EN FOOTER -->
+            <img src="logo.png" alt="Logo Espacio Las Ñañas" class="h-16 mx-auto mb-4 object-contain opacity-90" onerror="this.style.display='none'">
+            
+            <!-- REDES SOCIALES CON COLORES -->
+            <div class="flex justify-center space-x-6 mb-6">
+                <!-- Facebook (Azul Oficial) -->
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" class="transition-transform duration-300 transform hover:scale-110" aria-label="Síguenos en Facebook">
+                    <svg class="w-10 h-10 bg-white rounded-full" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                </a>
+                
+                <!-- Instagram (Degradado Oficial) -->
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="transition-transform duration-300 transform hover:scale-110" aria-label="Síguenos en Instagram">
+                    <svg class="w-10 h-10" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="instagramGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#f09433;stop-opacity:1" />
+                                <stop offset="25%" style="stop-color:#e6683c;stop-opacity:1" />
+                                <stop offset="50%" style="stop-color:#dc2743;stop-opacity:1" />
+                                <stop offset="75%" style="stop-color:#cc2366;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#bc1888;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <path fill="url(#instagramGradient)" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                </a>
+            </div>
+
+            <p class="font-semibold mb-1">
+                © <span id="current-year"></span> Asociación de Mujeres Mapuche. Todos los derechos reservados.
+            </p>
+            <p class="italic font-light">
+                Küme mongelepe taiñ wall mapu (Que esté bien nuestra tierra).
+            </p>
+            <p class="mt-2 text-xs opacity-70">Desarrollo Front-End.</p>
+        </div>
+    </footer>
+
+    <!-- Modal de Imagen Ampliada -->
+    <div id="image-modal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4" onclick="closeImageModal()">
+        <button class="absolute top-4 right-4 text-white text-4xl font-bold hover:text-gray-300 z-50 transition-colors">&times;</button>
+        <img id="modal-image" src="" alt="Producto Ampliado" class="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl transform transition-transform duration-300 scale-95" onclick="event.stopPropagation()">
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN DE PRODUCTOS CON IMÁGENES PROPIAS ---
+        // IMPORTANTE: Reemplaza las URLs de 'placehold.co' por las rutas de tus propias imágenes.
+        let productsData = [
+            { id: 'p001', name: "Mix Verde Ñaña", description: "Mix de diferentes hojas verdes como lechuga, rúcula y mizuna.", price: 2500, stock: 50, imageUrl: "producto1.jpg" },
+            { id: 'p002', name: "Tomate Meliwitran", description: "Tomate con pulpa firme de huerta agroecológica", price: 2800, stock: 120, imageUrl: "producto2.jpg" },
+            { id: 'p003', name: "Ajo Chilote Agroecológico ", description: "Lleva el verdadero sabor del sur con nuestro Ajo Chilote Agroecológico: gran calibre, suave y natural.", price: 3000, stock: 80, imageUrl: "producto3.jpg" },
+            { id: 'p004', name: "Zapallo Ancestral Kütralwe ", description: "Pulpa cremosa de color intenso y dulzor superior, cultivado limpio para lograr las mejores cremas y cazuelas.", price: 3500, stock: 35, imageUrl: "producto4.jpg" },
+            { id: 'p005', name: "Yerba de San Juan Rayen ", description: "Cosecha limpia y seleccionada a mano, ideal para preparar infusiones relajantes de máxima pureza.", price: 2800, stock: 40, imageUrl: "producto5.jpg" },
+            { id: 'p006', name: "Mentha Mapu", description: "Menta 100% natural y libre de químicos, tu aliada perfecta para aliviar la digestión y relajar el cuerpo.", price: 1000, stock: 65, imageUrl: "producto6.jpg" },
+            { id: 'p007', name: "Mermelada Ñaña de Frutos Silvestres", description: "Sabor intenso, alto en antioxidantes y cocida lentamente para una textura artesanal inigualable.", price: 4500, stock: 90, imageUrl: "producto7.jpg" },
+            { id: 'p008', name: "Merkén Picor de la Tierra", description: "Sabor ahumado profundo y picor medio, la esencia de la cocina ancestral para elevar todos tus platos.", price: 3000, stock: 25, imageUrl: "producto8.jpg" },
+            { id: 'p009', name: "Semilla de Lechuga Invernal", description: "Variedad rústica y resistente a heladas, asegura lechugas frescas y crujientes durante todo el invierno", price: 1500, stock: 30, imageUrl: "producto9.jpg" }
+        ];
+
+        // Mapa de imágenes simple (ya no necesita estado de IA)
+        // { productId: { base64: null, status: 'pending' | 'loading' | 'loaded' | 'error' } }
+        let productImagesState = new Map();
+
+        let forumPosts = [
+            { id: 1, title: "Técnicas de siembra del Poroto", content: "Nos gustaría compartir la forma tradicional de preparar la tierra para el poroto en nuestra región...", author: "Admin", date: new Date().toLocaleDateString('es-CL') },
+            { id: 2, title: "¿Cómo conservar el Merkén?", content: "Hemos notado que el color del merkén se apaga con el tiempo. ¿Alguna recomendación de la comunidad?", author: "Visitante-A1B2", date: new Date().toLocaleDateString('es-CL') }
+        ];
+
+        // Estado de la aplicación
+        let isAuthenticated = JSON.parse(localStorage.getItem('isAuth')) || false;
+        let cart = JSON.parse(localStorage.getItem('cart')) || {};
+        let isCartVisible = false;
+        let isMenuOpen = false;
+
+
+        // --- UTILIDADES ---
+
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            const menu = document.getElementById('main-nav');
+            const openIcon = document.getElementById('menu-icon-open');
+            const closeIcon = document.getElementById('menu-icon-close');
+
+            if (isMenuOpen) {
+                menu.classList.remove('hidden');
+                openIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+                openIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+            }
+        }
+        
+        function showPageAndCloseMenu(pageId) {
+            showPage(pageId);
+            if (isMenuOpen && window.innerWidth < 768) {
+                toggleMenu();
+            }
+        }
+
+        function showPage(pageId) {
+            if (isCartVisible) toggleCart();
+            
+            document.querySelectorAll('.page-content').forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+
+            // Actualizar estilos de navegación (escritorio y móvil)
+            // Restauramos la lógica para resaltar el botón activo
+            const desktopPrefix = '#desk-nav-';
+            const mobilePrefix = '#mobile-nav-';
+            
+            // Resetear todos
+            document.querySelectorAll('.nav-link').forEach(btn => {
+                 btn.classList.remove('bg-[--color-secondary]', 'text-white', 'shadow-lg');
+                 btn.classList.add('text-gray-200', 'hover:bg-[#0d3b11]', 'hover:text-[--color-secondary]');
+                 // Fix para mobile text color
+                 if(btn.parentElement.id === 'main-nav') {
+                     btn.classList.add('text-gray-100');
+                     btn.classList.remove('text-gray-200');
+                 }
+            });
+
+            // Activar el actual
+            const activeDesktop = document.querySelector(desktopPrefix + pageId);
+            const activeMobile = document.querySelector(mobilePrefix + pageId);
+
+            [activeDesktop, activeMobile].forEach(btn => {
+                if(btn) {
+                    btn.classList.remove('text-gray-200', 'text-gray-100', 'hover:bg-[#0d3b11]', 'hover:text-[--color-secondary]');
+                    btn.classList.add('bg-[--color-secondary]', 'text-white', 'shadow-lg');
+                }
+            });
+
+            if (pageId === 'products') {
+                renderProducts();
+            }
+            if (pageId === 'forum') renderForum();
+            
+            updateAuthUI();
+        }
+
+        function displayMessage(containerId, message, isSuccess = false) {
+            const container = document.getElementById(containerId);
+            if(!container) return;
+            container.textContent = message;
+            container.classList.remove('hidden', 'bg-red-100', 'text-red-800', 'bg-green-100', 'text-green-800', 'bg-yellow-100', 'text-yellow-800');
+            container.classList.add(isSuccess ? 'bg-green-100' : 'bg-yellow-100', isSuccess ? 'text-green-800' : 'text-yellow-800');
+
+            setTimeout(() => {
+                container.classList.add('hidden');
+            }, 4000);
+        }
+
+        // --- LÓGICA DE IMAGEN AMPLIA (MODAL) ---
+
+        function openImageModal(imageUrl) {
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-image');
+            
+            modalImg.src = imageUrl;
+            modal.classList.remove('hidden');
+            
+            // Pequeña animación de entrada
+            requestAnimationFrame(() => {
+                modalImg.classList.remove('scale-95');
+                modalImg.classList.add('scale-100');
+            });
+
+            document.body.style.overflow = 'hidden'; // Evitar scroll
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-image');
+            
+            modalImg.classList.remove('scale-100');
+            modalImg.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = ''; // Restaurar scroll
+            }, 150); // Esperar a la animación
+        }
+
+        // --- LÓGICA DE AUTENTICACIÓN CON VALIDACIONES ---
+
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const emailInput = document.getElementById('login-email');
+            const passwordInput = document.getElementById('login-password');
+            const loginMessage = document.getElementById('login-message');
+            
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            // 1. Resetear errores previos
+            loginMessage.classList.add('hidden');
+            loginMessage.className = 'p-3 mb-4 rounded-lg font-medium hidden text-sm'; // Reset clases base
+            emailInput.classList.remove('input-error');
+            passwordInput.classList.remove('input-error');
+
+            // 2. Validaciones
+            let error = null;
+
+            // Regex simple para email: algo@algo.algo
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!email) {
+                error = "Por favor, ingresa tu correo electrónico.";
+                emailInput.classList.add('input-error');
+            } else if (!emailRegex.test(email)) {
+                error = "El formato del correo electrónico no es válido.";
+                emailInput.classList.add('input-error');
+            } else if (!password) {
+                error = "Por favor, ingresa tu contraseña.";
+                passwordInput.classList.add('input-error');
+            }
+
+            // Si hay error de validación, mostrarlo y detener
+            if (error) {
+                loginMessage.textContent = error;
+                loginMessage.classList.remove('hidden');
+                loginMessage.classList.add('bg-red-100', 'text-red-800'); // Letras rojas, fondo rojo suave
+                return;
+            }
+
+            // 3. Intento de Login (Simulado)
+            const TEST_EMAIL = "test@lasnianias.cl";
+            const TEST_PASS = "123456";
+
+            if (email === TEST_EMAIL && password === TEST_PASS) {
+                isAuthenticated = true;
+                localStorage.setItem('isAuth', 'true');
+                loginMessage.textContent = 'Sesión iniciada con éxito. Redirigiendo...';
+                loginMessage.classList.remove('hidden', 'bg-red-100', 'text-red-800');
+                loginMessage.classList.add('bg-green-100', 'text-green-800');
+                setTimeout(() => showPage('home'), 1500);
+            } else {
+                isAuthenticated = false;
+                localStorage.removeItem('isAuth');
+                loginMessage.textContent = 'Error: Credenciales incorrectas. Verifica tu correo y contraseña.';
+                loginMessage.classList.remove('hidden', 'bg-green-100', 'text-green-800');
+                loginMessage.classList.add('bg-red-100', 'text-red-800'); // Letras rojas para error de credenciales también
+                document.getElementById('login-password').value = '';
+            }
+            updateAuthUI();
+        }
+
+        function updateAuthUI() {
+            const loginButton = document.getElementById('nav-login');
+            const forumAuthMessage = document.getElementById('forum-auth-message');
+
+            if (isAuthenticated) {
+                loginButton.textContent = 'Cerrar Sesión';
+                loginButton.onclick = handleLogout;
+                if(forumAuthMessage) forumAuthMessage.classList.add('hidden');
+            } else {
+                loginButton.textContent = 'Ingresar';
+                loginButton.onclick = () => showPage('login');
+                if(forumAuthMessage) forumAuthMessage.classList.remove('hidden');
+            }
+        }
+
+        function handleLogout() {
+            isAuthenticated = false;
+            localStorage.removeItem('isAuth');
+            cart = {};
+            localStorage.removeItem('cart');
+            
+            // Limpiar campos del formulario de login al cerrar sesión
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
+
+            // Limpiar y ocultar el mensaje de estado del login anterior
+            const loginMessage = document.getElementById('login-message');
+            if (loginMessage) {
+                loginMessage.textContent = '';
+                loginMessage.classList.add('hidden');
+                // Restaurar clases base por si quedó con colores de éxito/error
+                loginMessage.className = 'p-3 mb-4 rounded-lg font-medium hidden text-sm';
+            }
+
+            updateAuthUI();
+            showPage('home');
+            displayMessage('product-message', 'Sesión cerrada y carrito vaciado.', true);
+        }
+        
+        // --- LÓGICA DEL CARRITO ---
+        
+        function toggleCart() {
+            isCartVisible = !isCartVisible;
+            const dropdown = document.getElementById('cart-dropdown');
+            if (isCartVisible) {
+                dropdown.classList.remove('hidden');
+                renderCart();
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+
+        function renderProducts() {
+            const listContainer = document.getElementById('product-list');
+            listContainer.innerHTML = productsData.map(product => {
+                const imageContent = `<img src="${product.imageUrl}" alt="${product.name}" class="w-full h-48 object-contain bg-white border-b-2 border-amber-300 cursor-pointer hover:opacity-90 transition-opacity" onclick="openImageModal('${product.imageUrl}')" title="Clic para ampliar" />`;
+
+                return `
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transform transition duration-300 hover:shadow-2xl hover:-translate-y-1">
+                        ${imageContent}
+                        <div class="p-4 flex flex-col flex-grow">
+                            <h3 class="text-xl font-bold text-[--color-primary] mb-2">${product.name}</h3>
+                            <p class="text-gray-600 text-sm mb-3 flex-grow">${product.description}</p>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-2xl font-extrabold text-[--color-secondary]">$${product.price.toLocaleString('es-CL')}</span>
+                                <span class="text-sm font-medium ${product.stock > 0 ? 'text-green-500' : 'text-red-500'}">
+                                    Stock: ${product.stock > 0 ? product.stock : 'Agotado'}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center mt-auto">
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="updateCart('${product.id}', -1)" ${cart[product.id] > 0 ? '' : 'disabled'} class="p-2 bg-gray-200 hover:bg-gray-300 rounded-full disabled:opacity-50"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" /></svg></button>
+                                    <span class="font-bold text-lg w-6 text-center">${cart[product.id] || 0}</span>
+                                    <button onclick="updateCart('${product.id}', 1)" ${product.stock === 0 || (cart[product.id] || 0) >= product.stock ? 'disabled' : ''} class="p-2 btn-primary hover:bg-green-700 text-white rounded-full disabled:bg-gray-400"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            renderCart();
+        }
+
+        function updateCart(productId, change) {
+            const product = productsData.find(p => p.id === productId);
+            let currentQty = cart[productId] || 0;
+            const newQty = currentQty + change;
+
+            if (newQty < 0) return;
+            if (change > 0 && newQty > product.stock) {
+                displayMessage('product-message', `¡Stock limitado!`, false);
+                return;
+            }
+
+            if (newQty === 0) {
+                delete cart[productId];
+            } else {
+                cart[productId] = newQty;
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            renderProducts();
+        }
+
+        function renderCart() {
+            const cartItemsContainer = document.getElementById('cart-dropdown-items');
+            const cartTotalElement = document.getElementById('cart-dropdown-total');
+            const cartCountElement = document.getElementById('cart-count');
+            const checkoutButton = document.getElementById('dropdown-checkout-button');
+            let total = 0;
+            let itemCount = 0;
+
+            if (Object.keys(cart).length === 0) {
+                cartItemsContainer.innerHTML = '<p class="text-gray-600 italic text-center p-4">El carrito está vacío.</p>';
+                checkoutButton.disabled = true;
+            } else {
+                let html = '';
+                Object.keys(cart).forEach(productId => {
+                    const product = productsData.find(p => p.id === productId);
+                    const quantity = cart[productId];
+                    if (product) {
+                        const subtotal = product.price * quantity;
+                        total += subtotal;
+                        itemCount += quantity;
+                        html += `
+                            <div class="flex justify-between items-center border-b border-gray-100 pb-1 text-sm">
+                                <span class="font-medium text-gray-700 truncate max-w-[150px]">${product.name} (x${quantity})</span>
+                                <span class="font-semibold text-[--color-primary]">$${subtotal.toLocaleString('es-CL')}</span>
+                            </div>
+                        `;
+                    }
+                });
+                cartItemsContainer.innerHTML = html;
+                checkoutButton.disabled = false;
+            }
+
+            cartCountElement.textContent = itemCount;
+            cartTotalElement.textContent = `$${total.toLocaleString('es-CL')}`;
+
+            if (itemCount === 0) {
+                cartCountElement.classList.add('hidden');
+            } else {
+                cartCountElement.classList.remove('hidden');
+            }
+        }
+
+        function handleCheckout() {
+            const total = productsData.reduce((sum, p) => sum + (p.price * (cart[p.id] || 0)), 0);
+            if (isCartVisible) toggleCart();
+            cart = {};
+            localStorage.removeItem('cart');
+            renderProducts();
+            showPage('products');
+            displayMessage('product-message', `¡Compra Exitosa! Total: $${total.toLocaleString('es-CL')}.`, true);
+        }
+
+        function renderForum() {
+            const container = document.getElementById('forum-posts-container');
+            
+            if (!isAuthenticated) {
+                document.getElementById('new-post-form').querySelector('button').disabled = true;
+                document.getElementById('forum-auth-message').classList.remove('hidden');
+            } else {
+                document.getElementById('new-post-form').querySelector('button').disabled = false;
+                document.getElementById('forum-auth-message').classList.add('hidden');
+            }
+
+            if (forumPosts.length === 0) {
+                container.innerHTML = `<div class="text-center p-10 bg-white rounded-xl shadow-lg"><p class="text-xl text-gray-500">Sé el primero en publicar.</p></div>`;
+                return;
+            }
+
+            const sortedPosts = [...forumPosts].sort((a, b) => b.id - a.id);
+            container.innerHTML = sortedPosts.map(post => `
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-[--color-primary] mb-4">
+                    <h4 class="text-xl font-bold text-[--color-primary] mb-1">${post.title}</h4>
+                    <p class="text-sm text-gray-500 mb-3 italic">Por: <span class="font-mono text-xs">${post.author}</span> | ${post.date}</p>
+                    <p class="text-gray-700 leading-relaxed">${post.content}</p>
+                </div>
+            `).join('');
+        }
+
+        function handleNewPost(event) {
+            event.preventDefault();
+            if (!isAuthenticated) {
+                displayMessage('product-message', 'Debes Iniciar Sesión.', false);
+                return;
+            }
+            const title = document.getElementById('post-title').value.trim();
+            const content = document.getElementById('post-content').value.trim();
+            if (!title || !content) return;
+
+            forumPosts.push({ id: forumPosts.length + 1, title, content, author: 'Usuario', date: new Date().toLocaleDateString('es-CL') });
+            document.getElementById('new-post-form').reset();
+            renderForum();
+            displayMessage('product-message', '¡Publicado!', true);
+        }
+
+        function handleContactSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const nameInput = document.getElementById('contact-name');
+            const emailInput = document.getElementById('contact-email');
+            const messageInput = document.getElementById('contact-message');
+            const statusMessage = document.getElementById('contact-status-message');
+
+            // Resetear estilos
+            [nameInput, emailInput, messageInput].forEach(input => input.classList.remove('input-error'));
+            statusMessage.classList.add('hidden');
+            statusMessage.className = 'p-3 mb-4 rounded-lg font-medium hidden text-sm'; // Reset clases
+
+            let error = null;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!nameInput.value.trim()) {
+                error = "Por favor, ingresa tu nombre.";
+                nameInput.classList.add('input-error');
+            } else if (!emailInput.value.trim()) {
+                error = "Por favor, ingresa tu correo electrónico.";
+                emailInput.classList.add('input-error');
+            } else if (!emailRegex.test(emailInput.value.trim())) {
+                error = "El formato del correo electrónico no es válido.";
+                emailInput.classList.add('input-error');
+            } else if (!messageInput.value.trim()) {
+                error = "Por favor, escribe tu mensaje.";
+                messageInput.classList.add('input-error');
+            }
+
+            if (error) {
+                statusMessage.textContent = error;
+                statusMessage.classList.remove('hidden');
+                statusMessage.classList.add('bg-red-100', 'text-red-800');
+                return;
+            }
+
+            console.log("Formulario de contacto enviado:", { name: nameInput.value, email: emailInput.value, message: messageInput.value });
+            statusMessage.textContent = "¡Mensaje enviado con éxito! Nos pondremos en contacto pronto. Marichiweu.";
+            statusMessage.classList.remove('hidden');
+            statusMessage.classList.add('bg-green-100', 'text-green-800');
+            form.reset();
+            
+            // Ocultar mensaje de éxito después de unos segundos
+            setTimeout(() => {
+                statusMessage.classList.add('hidden');
+            }, 5000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('new-post-form').addEventListener('submit', handleNewPost);
+            document.getElementById('contact-form').addEventListener('submit', handleContactSubmit);
+            updateAuthUI();
+            renderCart();
+            showPage('home');
+        });
+    </script>
+</body>
+</html>
